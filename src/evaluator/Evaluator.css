@@ -1,0 +1,32 @@
+.counters {
+  display: flex;
+}
+
+.op {
+  margin-left: 5px;
+}
+
+.counter-container {
+  display: flex;
+  align-items: center;
+}
+
+.evaluator {
+  display: flex;
+  margin: 5px;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  margin-left: 10px;
+}
+
+.symbol {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+}
