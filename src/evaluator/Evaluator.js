@@ -48,7 +48,7 @@ class Evaluator extends React.Component {
     const counters = this.state.counters.map((_, i) => (
       <div key={i.toString()} className="counter-container">
         <div className="op">
-          {this.getOperatorByIndex()}
+          {this.getOperatorByIndex(i)}
         </div>
         <Counter
           key={i.toString()}
