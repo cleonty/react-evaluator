@@ -39,12 +39,16 @@ class Evaluator extends React.Component {
     }));
   }
 
+  getOperatorByIndex(i) {
+    return i > 0 ? this.operators[(i - 1) % this.operators.length] : '';
+  }
+
   render() {
     const result = evaluate(this.state.counters, this.operators);
     const counters = this.state.counters.map((_, i) => (
       <div key={i.toString()} className="counter-container">
         <div className="op">
-          {i > 0 ? this.operators[(i - 1) % this.operators.length] : ''}
+          {this.getOperatorByIndex()}
         </div>
         <Counter
           key={i.toString()}
