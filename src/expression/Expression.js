@@ -1,10 +1,9 @@
 function evaluate(operands, operators) {
-  let exp = makeExp(operands, operators);
+  const exp = makeExp(operands, operators);
+  const stream = new Stream(exp);
   const result = {};
   try {
-    exp = evalMulAndDiv(exp);
-    exp = evalAddAndSub(exp);
-    result.res = exp[0];
+    result.res = evalSum(stream);
   } catch(e) {
     result.err = e.message;
   }
@@ -24,39 +23,57 @@ function makeExp(operands, operators) {
   return exp;
 }
 
-function evalMulAndDiv(exp) {
-  const result = [];
-  for (let i = 0; i < exp.length; i++) {
-    if (exp[i] === '*') {
-      result[result.length - 1] *= exp[i + 1];
-      i++;
-    } else if (exp[i] === '/') {
-      if (exp[i + 1] === 0) {
-        throw new Error('Division by zero');
-      }
-      result[result.length - 1] /= exp[i + 1];
-      i++;
-    } else {
-      result.push(exp[i]);
-    }
+class Stream {
+  constructor(exp) {
+    this.exp = exp;
+    this.len = exp.length;
+    this.pos = 0;
   }
-  return result;
+  next() {
+    if (this.pos < this.len) {
+      this.pos++;
+    }
+    return this.token();
+  }
+  lookahead() {
+    return this.exp[this.pos + 1];
+  }
+  token() {
+    return this.exp[this.pos];
+  }
 }
 
-function evalAddAndSub(exp) {
-  const result = [];
-  for (let i = 0; i < exp.length; i++) {
-    if (exp[i] === '+') {
-      result[result.length - 1] += exp[i + 1];
-      i++;
-    } else if (exp[i] === '-') {
-      result[result.length - 1] -= exp[i + 1];
-      i++;
+function evalSum(stream) {
+  let lhs = evalProduct(stream);
+  while(['+', '-'].indexOf(stream.lookahead()) !== -1 ) {
+    const op = stream.next();
+    stream.next();
+    const rhs = evalProduct(stream);
+    if (op === '+') {
+      lhs += rhs;
     } else {
-      result.push(exp[i]);
+      lhs -= rhs;
     }
   }
-  return result;
+  return lhs;
+}
+
+function evalProduct(stream) {
+  let lhs = stream.token();
+  if (['*', '/'].indexOf(stream.lookahead()) !== -1 ) {
+    const op = stream.next();
+    stream.next();
+    const rhs = evalProduct(stream);
+    if (op == '*') {
+      lhs *= rhs;
+    } else {
+      if (rhs === 0) {
+        throw new Error('Division by zero');
+      }
+      lhs /= rhs;
+    }
+  }
+  return lhs;
 }
 
 export default evaluate;
