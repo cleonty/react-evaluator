@@ -3,7 +3,7 @@ function evaluate(operands, operators) {
   const stream = new Stream(exp);
   const result = {};
   try {
-    result.res = evalSum(stream);
+    result.res = evalBinary(stream, 1);
   } catch(e) {
     result.err = e.message;
   }
@@ -43,37 +43,51 @@ class Stream {
   }
 }
 
-function evalSum(stream) {
-  let lhs = evalProduct(stream);
-  while(['+', '-'].indexOf(stream.lookahead()) !== -1 ) {
-    const op = stream.next();
-    stream.next();
-    const rhs = evalProduct(stream);
-    if (op === '+') {
-      lhs += rhs;
-    } else {
-      lhs -= rhs;
+function evalBinary(stream, prec1) {
+  let lhs = evalUnary(stream);
+  for (let prec = precedence(stream.token()); prec >= prec1; prec--) {
+    while (precedence(stream.token()) == prec) {
+      const op = stream.token();
+      stream.next();
+      const rhs = evalBinary(stream, prec+1)
+      switch (op) {
+        case '+':
+          lhs += rhs;
+          break;
+        case '-':
+          lhs -= rhs;
+          break;
+        case '*':
+          lhs *= rhs;
+          break;
+        case '/':
+          if (rhs === 0) {
+            throw new Error('Division by zero');
+          }
+          lhs /= rhs;
+          break;
+        default:
+          throw new Error(`Unknown operator ${op}`);
+      }
     }
   }
   return lhs;
 }
 
-function evalProduct(stream) {
+function evalUnary(stream) {
   let lhs = stream.token();
-  if (['*', '/'].indexOf(stream.lookahead()) !== -1 ) {
-    const op = stream.next();
-    stream.next();
-    const rhs = evalProduct(stream);
-    if (op == '*') {
-      lhs *= rhs;
-    } else {
-      if (rhs === 0) {
-        throw new Error('Division by zero');
-      }
-      lhs /= rhs;
-    }
-  }
+  stream.next();
   return lhs;
+}
+
+function precedence(token) {
+  if (token === '*' || token === '/') {
+    return 2;
+  }
+  if (token === '-' || token === '+') {
+    return 1;
+  }
+  return 0;
 }
 
 export default evaluate;
